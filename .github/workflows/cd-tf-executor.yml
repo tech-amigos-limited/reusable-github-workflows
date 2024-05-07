@@ -86,7 +86,7 @@ jobs:
               exclude-workflow-initiator-as-approver: false
 
   terraform-apply:
-    needs: [ terraform-plan ]
+    needs: [ approve-tf-plan ]
     runs-on: ubuntu-latest
     name: Run Terraform Apply
     environment: ${{ inputs.environment }}
