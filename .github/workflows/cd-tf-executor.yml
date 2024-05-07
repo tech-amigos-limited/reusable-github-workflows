@@ -60,6 +60,7 @@ jobs:
           aws-region: ${{ inputs.aws_region }}
       - name: "Create Terraform plan for ${{ inputs.environment }} environment"
         uses: dflook/terraform-plan@v1
+        id: plan
         with:
           path: ${{ inputs.terraform_path }}
           var_file: "${{ inputs.terraform_path }}/environments/${{ inputs.environment }}-vars.tfvars"
@@ -89,7 +90,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Run Terraform Apply
     environment: ${{ inputs.environment }}
-    if: ${{ inputs.tf_apply_yn == true}}
+    if: ${{ inputs.tf_apply_yn == true && needs.generate-terraform-plan.outputs.changes == 'true'}}
     needs: [approve-tf-plan]
     steps:
       - name: Checkout
