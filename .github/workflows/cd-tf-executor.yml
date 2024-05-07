@@ -89,8 +89,8 @@ jobs:
     runs-on: ubuntu-latest
     name: Run Terraform Apply
     environment: ${{ inputs.environment }}
-    if: ${{ inputs.tf_apply_yn == true }}
-    needs: [generate-terraform-plan]
+    if: ${{ inputs.tf_apply_yn == true}}
+    needs: [approve-tf-plan]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
