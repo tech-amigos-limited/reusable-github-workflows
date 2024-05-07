@@ -33,64 +33,65 @@ on:
       role_to_assume:
         required: true
       git_token:
-        required: false
+        required: true
 
 permissions:
   id-token: write # OIDC token generated in the reusable workflow can be accessed from context of dflook/terraform-plan@v1
   contents: read
 
 env:
-  GITHUB_TOKEN: ${{ secrets.git_token}}
+  GITHUB_TOKEN: ${{ secrets.git_token }}
   
 jobs:
-  terraform-plan:
+  generate-terraform-plan:
     runs-on: ubuntu-latest
     name: Run Terraform Plan on Master
     outputs:
       tag: ${{ steps.create-tag.outputs.tag }}
+      changes: ${{ steps.plan.outputs.changes }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           ref: ${{ inputs.git_branch_sha }}
       - uses: aws-actions/configure-aws-credentials@v4
-      # Exchanges the OIDC token (JWT) for a cloud access token.
         with:
           role-to-assume: ${{ secrets.role_to_assume }}
           aws-region: ${{ inputs.aws_region }}
       - name: "Create Terraform plan for ${{ inputs.environment }} environment"
         uses: dflook/terraform-plan@v1
+        id: plan
         with:
           path: ${{ inputs.terraform_path }}
           var_file: "${{ inputs.terraform_path }}/environments/${{ inputs.environment }}-vars.tfvars"
           backend_config_file: "${{ inputs.terraform_path }}/environments/${{ inputs.environment }}-backend.tfvars"
-          add_github_comment: ${{inputs.pull_request_yn}}
+          add_github_comment: ${{ inputs.pull_request_yn }}
 
   approve-tf-plan:
-        if: ${{ needs.tf-plan.outputs.changes == 'true' }}
-        needs: [terraform-plan]
-        runs-on: ubuntu-latest
-        name: Approve Terraform Plan
-        steps:
-          - name: Checkout
-            uses: actions/checkout@v4
-            with:
-              ref: ${{ github.event.pull_request.head.sha }}
-          - uses: trstringer/manual-approval@v1
-            with:
-              secret: ${{ secrets.GHA_TF_ACTION_PAT }}
-              approvers: DevOpsAmigos
-              minimum-approvals: 1
-              issue-title: "Approve TF PLAN"
-              issue-body: "Please approve or deny the terraform plan."
-              exclude-workflow-initiator-as-approver: false
+    if: ${{ inputs.tf_apply_yn == true && needs.generate-terraform-plan.outputs.changes == 'true' }}
+    needs: [generate-terraform-plan]
+    runs-on: ubuntu-latest
+    name: Approve Terraform Plan
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - uses: trstringer/manual-approval@v1
+        with:
+          secret: ${{ secrets.git_token }}
+          approvers: DevOpsAmigos
+          minimum-approvals: 1
+          issue-title: "Approve TF PLAN"
+          issue-body: "Please approve or deny the terraform plan."
+          exclude-workflow-initiator-as-approver: false
 
   terraform-apply:
-    needs: [ terraform-plan ]
     runs-on: ubuntu-latest
     name: Run Terraform Apply
     environment: ${{ inputs.environment }}
-    if: ${{ inputs.tf_apply_yn == true }}
+    if: ${{ inputs.tf_apply_yn == true && needs.generate-terraform-plan.outputs.changes == 'true'}}
+    needs: [approve-tf-plan]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -103,6 +104,7 @@ jobs:
       - name: "Apply Terraform Plan for ${{ inputs.environment }} environment"
         uses: dflook/terraform-apply@v1
         with:
+          changes: false
           path: ${{ inputs.terraform_path }}
           var_file: "${{ inputs.terraform_path }}/environments/${{ inputs.environment }}-vars.tfvars"
           backend_config_file: "${{ inputs.terraform_path }}/environments/${{ inputs.environment }}-backend.tfvars"
