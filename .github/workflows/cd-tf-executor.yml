@@ -67,7 +67,6 @@ jobs:
           add_github_comment: ${{ inputs.pull_request_yn }}
 
   approve-tf-plan:
-    if: ${{ needs.generate-terraform-plan.outputs.changes == 'true' }}
     needs: [generate-terraform-plan]
     runs-on: ubuntu-latest
     name: Approve Terraform Plan
