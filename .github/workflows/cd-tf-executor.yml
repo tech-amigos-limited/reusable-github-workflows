@@ -47,6 +47,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Run Terraform Plan on Master
     outputs:
+      changes: ${{ steps.plan.outputs.changes }}
       tag: ${{ steps.create-tag.outputs.tag }}
     steps:
       - name: Checkout
