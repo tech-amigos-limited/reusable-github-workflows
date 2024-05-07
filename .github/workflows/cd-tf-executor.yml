@@ -103,6 +103,7 @@ jobs:
       - name: "Apply Terraform Plan for ${{ inputs.environment }} environment"
         uses: dflook/terraform-apply@v1
         with:
+          changes: false
           path: ${{ inputs.terraform_path }}
           var_file: "${{ inputs.terraform_path }}/environments/${{ inputs.environment }}-vars.tfvars"
           backend_config_file: "${{ inputs.terraform_path }}/environments/${{ inputs.environment }}-backend.tfvars"
