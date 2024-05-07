@@ -79,7 +79,7 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
       - uses: trstringer/manual-approval@v1
         with:
-          secret: ${{ secrets.GHA_TF_ACTION_PAT }}
+          secret: ${{ secrets.GITHUB_TOKEN }}
           approvers: DevOpsAmigos
           minimum-approvals: 1
           issue-title: "Approve TF PLAN"
