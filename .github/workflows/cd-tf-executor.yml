@@ -67,8 +67,8 @@ jobs:
           add_github_comment: ${{ inputs.pull_request_yn }}
 
   approve-tf-plan:
-    needs: terraform-plan
     if: ${{ needs.terraform-plan.outputs.changes == 'true' }}
+    needs: [terraform-plan]
     runs-on: ubuntu-latest
     name: Approve Terraform Plan
     steps:
@@ -86,11 +86,11 @@ jobs:
           exclude-workflow-initiator-as-approver: false
 
   terraform-apply:
-    needs: approve-tf-plan
     runs-on: ubuntu-latest
     name: Run Terraform Apply
     environment: ${{ inputs.environment }}
     if: ${{ inputs.tf_apply_yn == true }}
+    needs: approve-tf-plan
     steps:
       - name: Checkout
         uses: actions/checkout@v4
