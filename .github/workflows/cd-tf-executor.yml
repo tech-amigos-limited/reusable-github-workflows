@@ -109,15 +109,13 @@ jobs:
           var_file: "${{ inputs.terraform_path }}/environments/${{ inputs.environment }}-vars.tfvars"
           backend_config_file: "${{ inputs.terraform_path }}/environments/${{ inputs.environment }}-backend.tfvars"
           auto_approve: true
-
       - name: 🌐 Get all Terraform outputs
         id: all_outputs
         uses: dflook/terraform-output@v1
         with:
           path: ${{ inputs.terraform_path }}
           json: true
-      
       # Then exposed like this:
-      outputs:
-        tf_outputs_json: ${{ steps.all_outputs.outputs.value }}
+        outputs:
+          tf_outputs_json: ${{ steps.all_outputs.outputs.value }}
           
