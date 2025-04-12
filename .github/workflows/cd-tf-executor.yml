@@ -35,6 +35,11 @@ on:
       git_token:
         required: true
 
+    outputs:                               
+      tf_outputs_json:
+        description: "All Terraform outputs as JSON"
+        value: ${{ jobs.terraform-apply.outputs.tf_outputs_json }}
+
 permissions:
   id-token: write # OIDC token generated in the reusable workflow can be accessed from context of dflook/terraform-plan@v1
   contents: read
