@@ -115,4 +115,9 @@ jobs:
         uses: dflook/terraform-output@v1
         with:
           path: ${{ inputs.terraform_path }}
-          json: true          
+          json: true
+      
+      # Then exposed like this:
+      outputs:
+        tf_outputs_json: ${{ steps.all_outputs.outputs.value }}
+          
